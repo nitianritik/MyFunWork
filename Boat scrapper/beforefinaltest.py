@@ -1,14 +1,14 @@
-import asyncio
-
-
 MAX_SIZE = 100
-client = 0
+
 # Initialize an empty list to store the lists
 fifo_list = []
 
 # Initialize an empty set to keep track of the unique lists
 unique_set = set()
 
+import socketio
+sio = socketio.Client()
+sio.connect('http://localhost:8000')
 
 
 # Add tuples to the FIFO set
@@ -18,18 +18,16 @@ def add_to_fifo_set(list_item):
     
     # Check if the tuple is already in the set
     if tuple_item[1] in unique_set:
-        countint = counting +1
         return False
 
     # Add the list to the list and set
+    print(f"Adding item -> {list_item}")
     fifo_list.append(list_item)
-    print(f"ADDING [{len(fifo_list)}] -> \n ID = {list_item[0]} \n MESSAGE = {list_item[1]} \n lINKS = {list_item[2]}")
     unique_set.add(tuple_item[1])
 
     # Remove the oldest list if the list size exceeds the maximum
     if len(fifo_list) > MAX_SIZE:
         oldest_list = fifo_list.pop(0)
-        print(f"REMOVING [{len(fifo_list)}]-> \n {list_item[0]} \n {list_item[1]} \n {list_item[2]}")
         unique_set.remove(tuple(oldest_list))
 
     return True
@@ -50,21 +48,12 @@ import secrets,time,re,helpers
 api_id = secrets.telegram_api_id
 api_hash = secrets.app_api_hash
 
-async def starting_client():
-    # Do some other stuff...
-    print("starting the client...")
-    await client.start()
-
 # Create the client
 client = 0
 while 1:
  try:
     print("Trying to commect to Telegram Client...")
-    client = TelegramClient('Ritik_ka_telegram_session', api_id, api_hash)
-    starting_client()
-
-    loop1 = asyncio.get_event_loop()
-    loop1.run_until_complete(starting_client())
+    client = TelegramClient('Ritik_telegram_session', api_id, api_hash)
     print("Successfully connected !!!")
     break
  except Exception as e:
@@ -78,17 +67,15 @@ def process(message_object):
 
     id = message_object.id
     message = helpers.strip_links(message_object.message)
-    links = helpers.get_link(str(message_object.message))
-
+    
+    links = helpers.get_link(message_object.message)
+    # print("hello")
+  
     sending_list = [id,message.strip(),links]
     
-
+    print(sending_list)
+   
     flag =  add_to_fifo_set(sending_list)
-    
-    #print(f"message ----> {message_object.message}\nsending_list ----> {sending_list}")
-
-    #exit()
-
      
 
     return flag
@@ -97,21 +84,19 @@ def process(message_object):
 
 
 
-counting = 0
  
 
 
 # Set to search the keyword required in the meassage
 keyword_set = {"loot", "big", "boat", "earphone", "protein powder","whey protein", "giveaway" , "give away"}
+
 async def main():
 
    try:
     
     # Connect to Telegram
-    #print("Starting the client...")
-    #await client.start()
-    
-    #print("getting all the messages..")
+    await client.start()
+
     # Get all dialogs (chats and channels)
     async for dialog in client.iter_dialogs():
         # Filter out dialogs with unread messages
@@ -120,22 +105,18 @@ async def main():
             # Print the messages from the unread dialogs
             for message in messages:
              
-                    if message.post and message.message != "":
-                       
-                      if(process(message)):
-                        #print(message)
-                        #print(message.message.strip())
-                        # print("\n________________________________________________________________" , end = "")
-                        # print(counting)
-                        print(f"\n_____________________________________Duplicate = {counting} ______\n")
-                        #print(f"MESSAGE: \n {message.message}\n  TYPE: \n {type(message.message)} ")
-                        #await client.send_read_acknowledge(dialog.input_entity, message)
-                        #await client.mark_read(dialog.input_entity, message)
-                      else: countint = counting +1
+                
+              if message.post and message.message != "" and process(message):
 
+                  print(message)
+                  text = message.message.strip()
+                  print(text)
+                  sio.emit('message', text)
 
-                    #await client.send_read_acknowledge(dialog.input_entity, message)
-
+                  print("\n----------------------------------------------\n")
+                  #print(f"MESSAGE: \n {message.message}\n  TYPE: \n {type(message.message)} ")
+                  await client.send_read_acknowledge(dialog.input_entity, message)
+                  #await client.mark_read(dialog.input_entity, message)
 
                 
 
@@ -145,14 +126,15 @@ async def main():
                 
 
 if __name__ == '__main__':
-    counting = 0
+    import asyncio
+
     while 1:
         time.sleep(5)
-        #print("----> Request Reading...")
+        print("----> Request Reading...")
         loop = asyncio.get_event_loop()
         loop.run_until_complete(main())
-        #print("----> Reading done !")
-        # print("______________________________________")
+        print("----> Reading done !")
+        print("______________________________________")
       
         
 
