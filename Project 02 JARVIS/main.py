@@ -414,14 +414,14 @@ def main_thread():
                     results = results.strip('\n')
                     results = results.strip('\t')
                     print("stripped")
-                except error as e:
+                except Exception as e:
                     print(e)
                     pass
                 try:
                     results = results.replace('\n', '')
                     results = results.replace('\t', '')
                     print("stripped")
-                except error as e:
+                except Exception as e:
                     print(e)
                     pass
                 print(type(results))
@@ -443,14 +443,14 @@ def main_thread():
                     results = results.strip('\n')
                     results = results.strip('\t')
                     print("stripped")
-                except error as e:
+                except Exception as e:
                     print(e)
                     pass
                 try:
                     results = results.replace('\n', '')
                     results = results.replace('\t', '')
                     print("stripped")
-                except error as e:
+                except Exception as e:
                     print(e)
                     pass
                 print(type(results))
@@ -582,6 +582,9 @@ def main_thread():
             voice_character += 1
             voice_character %= 3
             engine.setProperty('voice', voices[voice_character].id)
+            engine.setProperty('rate', 115)
+            #engine.setProperty('volume', 0.5) # adjust the speaking rate
+
             wishMe()
 
         elif (("check" in query or "see" in query or "status" in query) and (
@@ -686,27 +689,27 @@ def main_thread():
             speakk("At your service sir.", "For you, always sir.")
 
        # to store queries uncomment this below code
-       #  else:
-       #      if query == "none":
-       #          continue
-       #      try:
-       #          strr = "insert into userquery values(NULL," + query + ",false);"
-       #          mycursor.execute(strr)
-       #          con.commit()
-       #      except:
-       #          pass
-       #
-       #      continue
-       #  if query == "none":
-       #      continue
+        else:
+            if query == "none":
+                continue
+            try:
+                strr = "insert into userquery values(NULL," + query + ",false);"
+                mycursor.execute(strr)
+                con.commit()
+            except:
+                pass
+       
+            continue
+        if query == "none":
+            continue
 
-        # query = '"' + query + '"'
-        # try:
-        #   strr = "insert into userquery values(NULL," + query + ",true);"
-        #   mycursor.execute(strr)
-        #   con.commit()
-        # except:
-        #     pass
+        query = '"' + query + '"'
+        try:
+          strr = "insert into userquery values(NULL," + query + ",true);"
+          mycursor.execute(strr)
+          con.commit()
+        except:
+            pass
 
 
 t2 = threading.Thread(target=main_thread, args=())
