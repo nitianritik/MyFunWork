@@ -1,7 +1,8 @@
 import telebot 
 from pygame import mixer
+import secrets
 #6192276630:AAEsrsSS0gkcfekkDBr_wW7Z2q1yM2KtCkI
-bot = telebot.TeleBot('6192276630:AAEsrsSS0gkcfekkDBr_wW7Z2q1yM2KtCkI')
+bot = telebot.TeleBot(secrets.TeleBot_Token)
 
 keyword = 'play'
 
