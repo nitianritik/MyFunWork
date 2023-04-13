@@ -25,9 +25,7 @@ while 1:
 
 # Funtion to check links in the message
  
-pattern = re.compile(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
-def contains_link(message):
-    return pattern.search(message.lower()) is not None
+
 
 # Set to search the keyword required in the meassage
 keyword_set = {"loot", "big", "boat", "earphone", "protein powder","whey protein", "giveaway" , "give away"}
