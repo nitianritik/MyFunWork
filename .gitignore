@@ -1,2 +1,3 @@
 #Here i am putting all the files that should be ignore while pushing the code to
 Boat scrapper/secrets.py
+Secrets

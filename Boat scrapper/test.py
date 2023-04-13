@@ -8,7 +8,15 @@ api_id = secrets.telegram_api_id
 api_hash = secrets.app_api_hash
 
 # Create the client
-client = TelegramClient('session_name', api_id, api_hash)
+client = 0
+while 1:
+ try:
+    print("Trying to commect to Telegram Client...")
+    client = TelegramClient('Ritik_telegram_session', api_id, api_hash)
+    print("Successfully connected !!!")
+    break
+ except Exception as e:
+    print(f"Exception: {e}")
 
 # Funtion to check links in the message
  
@@ -63,7 +71,6 @@ if __name__ == '__main__':
 ''''
 
 ALL OF THE ATTRIBUTES OF MESSAGE
-
 
 
 id: The unique identifier for the message.
