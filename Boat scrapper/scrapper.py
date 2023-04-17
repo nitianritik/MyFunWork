@@ -23,7 +23,14 @@ while 1:
  except Exception as e:
     print(f"Exception: {e}")
 
-# Funtion to check links in the message
+#Funtion to process the message
+
+def process(message):
+   pass
+   
+
+
+
  
 
 
@@ -34,7 +41,7 @@ async def main():
 
    try:
     
-    # # Connect to Telegram
+    # Connect to Telegram
     await client.start()
 
     # Get all dialogs (chats and channels)
@@ -47,6 +54,7 @@ async def main():
                 #print(message)
                 
                 if message.post and message.message != "":
+                  print(message)
                   print(message.message.strip())
                   print("\n----------------------------------------------\n")
                 #print(f"MESSAGE: \n {message.message}\n  TYPE: \n {type(message.message)} ")
