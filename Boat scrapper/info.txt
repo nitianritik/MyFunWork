@@ -1,0 +1,6 @@
+NOT USEFUL COMMAND
+git commit --date="2022-03-21 12:00:00" -m "adding My Blog files here"
+
+
+git commit --date="yesterday" -m "Commit message"
+
