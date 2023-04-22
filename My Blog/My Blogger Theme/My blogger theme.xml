@@ -2,6 +2,142 @@
 <!DOCTYPE html>
 <html b:version='2' class='v2' expr:dir='data:blog.languageDirection' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
 <head>
+  
+      
+/*----------------------------------------------------------------------------------------------------------------------------------------------*/
+    /*Here adding the css code inside style tag and three files to use code snippits in blogger posts*/
+  
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css' rel='stylesheet'/>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js'/>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-javascript.min.js'/>
+  
+<style>
+    
+/* Code window styles */
+.code-window {
+  background-color: #292b2f;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  font-family: &#39;Segoe UI&#39;, Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Code header styles */
+.code-header {
+  background-color: #212326;
+  padding: 10px;
+  border-bottom: 1px solid #404040;
+}
+
+/* Code body styles */
+.code-body {
+  padding: 10px;
+}
+
+/* Code snippet styles */
+pre {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-x: auto;
+}
+
+/* Syntax highlighting styles */
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: #6a9955;
+}
+
+.token.punctuation {
+  color: #d4d4d4;
+}
+
+.token.property,
+.token.tag,
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol,
+.token.deleted {
+  color: #b5cea8;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+  color: #ce9178;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #9cdcfe;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #dcdcaa;
+}
+
+.token.function,
+.token.class-name {
+  color: #4ec9b0;
+}
+
+.token.regex,
+.token.important,
+.token.variable {
+  color: #d16969;
+}
+
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+
+.token.italic {
+  font-style: italic;
+}
+
+.token.entity {
+  cursor: help;
+}
+</style>
+  
+  <!-- USE THE BELOW HTML SNIPPITS TO SHOW CODE SNIPPITS IN BLOGGER POSTS
+  
+<div class="code-window">
+  <div class="code-header">
+    <h>Code Snippet</h3>
+  </div>
+  <div class="code-body">
+    <pre>
+      <code class="language-javascript">
+        // Your code here
+      </code>
+    </pre>
+  </div>
+</div>
+  
+  -->
+
+  
+    
+/*-----------------------------------------------------------------------------------------------------------------------------------------------*/
+    
+  
+  
 <meta content='Vx1Gytckk9RkFWvDprZQesVH9e4' name='alexaVerifyID'/>
 <link href='https://fonts.googleapis.com/css?family=Righteous' rel='stylesheet' type='text/css'/>
 <link href='https://fonts.googleapis.com/css?family=Open+Sans:600' rel='stylesheet' type='text/css'/>
@@ -900,15 +1036,9 @@ var numComments = numComments || 5, avatarSize = avatarSize || 60, characters = 
   </b:widget>
 </b:section>
   <b:section class='header-right section' id='header-right' maxwidgets='1' showaddelement='yes'>
-    <b:widget id='HTML1' locked='false' title='' type='HTML' version='1'>
+    <b:widget id='HTML1' locked='false' title='nothing' type='HTML' version='1'>
       <b:widget-settings>
-        <b:widget-setting name='content'>&lt;script async src=&quot;//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js&quot;&gt;&lt;/script&gt;
-&lt;script&gt;
-     (adsbygoogle = window.adsbygoogle || []).push({
-          google_ad_client: &quot;ca-pub-8082075723128279&quot;,
-          enable_page_level_ads: true
-     });
-&lt;/script&gt;</b:widget-setting>
+        <b:widget-setting name='content'><![CDATA[<p></p>]]></b:widget-setting>
       </b:widget-settings>
       <b:includable id='main'>
   <!-- only display title if it's non-empty -->
@@ -993,13 +1123,14 @@ var numComments = numComments || 5, avatarSize = avatarSize || 60, characters = 
     <b:widget id='Blog1' locked='true' title='Blog Posts' type='Blog' version='1'>
       <b:widget-settings>
         <b:widget-setting name='showDateHeader'>false</b:widget-setting>
-        <b:widget-setting name='style.textcolor'>#000000</b:widget-setting>
+        <b:widget-setting name='commentLabel'>Comments 💬</b:widget-setting>
+        <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
         <b:widget-setting name='showShareButtons'>true</b:widget-setting>
-        <b:widget-setting name='authorLabel'>👤 Posted by</b:widget-setting>
+        <b:widget-setting name='authorLabel'>🙋&#8205;&#9794;&#65039; Written By</b:widget-setting>
         <b:widget-setting name='showCommentLink'>true</b:widget-setting>
-        <b:widget-setting name='style.urlcolor'>#008000</b:widget-setting>
+        <b:widget-setting name='style.urlcolor'>#ffffff</b:widget-setting>
         <b:widget-setting name='showAuthor'>true</b:widget-setting>
-        <b:widget-setting name='style.linkcolor'>#0000ff</b:widget-setting>
+        <b:widget-setting name='style.linkcolor'>#ffffff</b:widget-setting>
         <b:widget-setting name='style.unittype'>TextAndImage</b:widget-setting>
         <b:widget-setting name='style.bgcolor'>#ffffff</b:widget-setting>
         <b:widget-setting name='reactionsLabel'/>
@@ -1008,7 +1139,7 @@ var numComments = numComments || 5, avatarSize = avatarSize || 60, characters = 
         <b:widget-setting name='showLabels'>false</b:widget-setting>
         <b:widget-setting name='showLocation'>false</b:widget-setting>
         <b:widget-setting name='showTimestamp'>false</b:widget-setting>
-        <b:widget-setting name='postsPerAd'>1</b:widget-setting>
+        <b:widget-setting name='postsPerAd'>3</b:widget-setting>
         <b:widget-setting name='showBacklinks'>false</b:widget-setting>
         <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
         <b:widget-setting name='showInlineAds'>true</b:widget-setting>
@@ -2703,12 +2834,12 @@ Dhanywad 👍...
 <b:section class='sidebar section' id='sidebar' itemscope='itemscope' itemtype='http://schema.org/WPSideBar' preferred='yes'>
   <b:widget id='AdSense2' locked='false' title='' type='AdSense'>
     <b:widget-settings>
-      <b:widget-setting name='style.bgcolor'>#000000</b:widget-setting>
-      <b:widget-setting name='style.textcolor'>#36a3c9</b:widget-setting>
+      <b:widget-setting name='style.bgcolor'>#ffffff</b:widget-setting>
+      <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
       <b:widget-setting name='style.layout'>1x1</b:widget-setting>
-      <b:widget-setting name='style.bordercolor'>#000000</b:widget-setting>
-      <b:widget-setting name='style.urlcolor'>#36a3c9</b:widget-setting>
-      <b:widget-setting name='style.linkcolor'>#36a3c9</b:widget-setting>
+      <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
+      <b:widget-setting name='style.urlcolor'>#ffffff</b:widget-setting>
+      <b:widget-setting name='style.linkcolor'>#ffffff</b:widget-setting>
       <b:widget-setting name='style.unittype'>TextAndImage</b:widget-setting>
     </b:widget-settings>
     <b:includable id='main'>
@@ -2788,7 +2919,7 @@ var numchars = 60;
       gapi.load(&quot;gapi.iframes:gapi.iframes.style.bubble&quot;, function() {
         if (gapi.iframes &amp;&amp; gapi.iframes.getContext) {
           gapi.iframes.getContext().openChild({
-              url: &#39;https://www.blogger.com/navbar.g?targetBlogID\x3d5059424484601988215\x26blogName\x3dSikhte+Raho\x26publishMode\x3dPUBLISH_MODE_BLOGSPOT\x26navbarType\x3dDISABLED\x26layoutType\x3dLAYOUTS\x26searchRoot\x3dhttps://tekbz.blogspot.com/search\x26blogLocale\x3den_GB\x26v\x3d2\x26homepageUrl\x3dhttps://tekbz.blogspot.com/\x26vt\x3d-611495001877167727&#39;,
+              url: &#39;https://www.blogger.com/navbar.g?targetBlogID\x3d5059424484601988215\x26blogName\x3dSikhte+Raho\x26publishMode\x3dPUBLISH_MODE_BLOGSPOT\x26navbarType\x3dDISABLED\x26layoutType\x3dLAYOUTS\x26searchRoot\x3dhttps://tekbz.blogspot.com/search\x26blogLocale\x3den_GB\x26v\x3d2\x26homepageUrl\x3dhttp://tekbz.blogspot.com/\x26vt\x3d-8521242376631095581&#39;,
               where: document.getElementById(&quot;navbar-iframe-container&quot;),
               id: &quot;navbar-iframe&quot;
           });
@@ -2861,7 +2992,7 @@ head.appendChild(script);
 <b:section class='banner section' id='banner' maxwidgets='1' showaddelement='yes'>
   <b:widget id='HTML2' locked='false' title='Put your ad code here' type='HTML' version='1'>
     <b:widget-settings>
-      <b:widget-setting name='content'><![CDATA[<center><iframe style="border: none; overflow: hidden; height: 150px;" src="//www.facebook.com/plugins/likebox.php?href=https%3A%2F%2Fwww.facebook.com%2Fsikhteraho&amp;width&amp;height=180&amp;colorscheme=light&amp;show_faces=true&amp;header=false&amp;stream=false&amp;show_border=false&amp;appId=299013060234545" width="300" height="150" frameborder="0" scrolling="no"></iframe></center>]]></b:widget-setting>
+      <b:widget-setting name='content'><![CDATA[<p></p>]]></b:widget-setting>
     </b:widget-settings>
     <b:includable id='main'>
   <!-- only display title if it's non-empty -->
@@ -2933,11 +3064,7 @@ head.appendChild(script);
 <b:section class='footer' id='footer2'>
   <b:widget id='HTML4' locked='false' title='' type='HTML'>
     <b:widget-settings>
-      <b:widget-setting name='content'>&lt;script src=&quot;https://webcdn.streamtest.net/streamtest.js&quot; type=&quot;text/javascript&quot;&gt;&lt;/script&gt;
-&lt;!-- BEGIN: Powered by Supercounters.com --&gt;
-&lt;center&gt;&lt;script type=&quot;text/javascript&quot; src=&quot;http://widget.supercounters.com/online_i.js&quot;&gt;&lt;/script&gt;&lt;script type=&quot;text/javascript&quot;&gt;sc_online_i(1214455,&quot;ffffff&quot;,&quot;e61c1c&quot;);&lt;/script&gt;&lt;br /&gt;&lt;noscript&gt;&lt;a href=&quot;http://www.supercounters.com/&quot;&gt;Free Online Counter&lt;/a&gt;&lt;/noscript&gt;
-&lt;/center&gt;
-&lt;!-- END: Powered by Supercounters.com --&gt;</b:widget-setting>
+      <b:widget-setting name='content'><![CDATA[<p></p>]]></b:widget-setting>
     </b:widget-settings>
     <b:includable id='main'>
   <!-- only display title if it's non-empty -->
