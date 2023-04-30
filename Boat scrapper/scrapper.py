@@ -1,12 +1,41 @@
 from telethon import TelegramClient
-# from telethon.sync import TelegramClient, events, mark_read
+import secrets,time,re,helpers
+import asyncio
+from telethon.tl.types import PeerUser, PeerChannel, PeerChat
 
-import secrets,time,re
 
-# import sys
-# sys.path.append('../Secrets')
 
-# import secrets 
+MAX_SIZE = 100
+
+fifo_list = []
+added = []
+removed = []
+unique_set = set()
+
+def add_to_fifo_set(list_item):
+    tuple_item = tuple(list_item)
+    
+    if tuple_item[1] in unique_set:
+        return False
+
+    # print(f"Adding item -> {list_item}")
+    added.append(list_item[0])
+    print("ADDED = ", end="")
+    for id in added: print(id, end=" | ")
+    fifo_list.append(list_item)
+    unique_set.add(tuple_item[1])
+
+    if len(fifo_list) > MAX_SIZE:
+        oldest_list = fifo_list.pop(0)
+        removed.append(oldest_list[0])
+        print("REMOVED = ", end="")
+        for id in removed: print(id, end=" | ")
+        unique_set.remove(tuple(oldest_list))
+
+    return True
+
+
+
 
 # API ID and hash key
 api_id = secrets.telegram_api_id
@@ -24,14 +53,16 @@ while 1:
     print(f"Exception: {e}")
 
 #Funtion to process the message
+id_and_links_dict = {}
 
-def process(message):
-   pass
-   
-
-
-
- 
+def process(message_object):
+    id = message_object.id
+    message = helpers.strip_links(message_object.message)
+    links = helpers.get_link(message_object.message)
+    sending_list = [id,message.strip(),links]
+    # print(sending_list)
+    flag =  add_to_fifo_set(sending_list)
+    return flag 
 
 
 # Set to search the keyword required in the meassage
@@ -43,38 +74,32 @@ async def main():
     
     # Connect to Telegram
     await client.start()
-
-    # Get all dialogs (chats and channels)
     async for dialog in client.iter_dialogs():
-        # Filter out dialogs with unread messages
+
         if dialog.unread_count > 0:
             messages = await client.get_messages(dialog.input_entity, limit=dialog.unread_count)
-            # Print the messages from the unread dialogs
-            for message in messages:   
-                #print(message)
-                
-                if message.post and message.message != "":
-                  print(message)
-                  print(message.message.strip())
-                  print("\n----------------------------------------------\n")
-                #print(f"MESSAGE: \n {message.message}\n  TYPE: \n {type(message.message)} ")
-                await client.send_read_acknowledge(dialog.input_entity, message)
-                #await client.mark_read(dialog.input_entity, message)
+            for message in messages:
+              if message.post and message.message != "" and process(message):
+                  print("\n\n➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n")
+                  entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
+                  M = str(message.message)
+                  M = M.replace('\n\n','\n')
+                  print(f"🟣 FROM➖  {entity.title} \n\n🟡  MESSAGE➖ \n{M}\n")
+                  time.sleep(3)
+                  #---------------- MARK AS READ ----------------------
+                #   await client.send_read_acknowledge(dialog.input_entity, message)
 
    except Exception as e:
-      pass
-      #print(f"Exception: {e}")
-                
+      print(f"Exception: {e}")
+
 
 if __name__ == '__main__':
-    import asyncio
-
     while 1:
         time.sleep(5)
-        #print("----> Request Reading...")
+        print("----> Request Reading...")
         loop = asyncio.get_event_loop()
         loop.run_until_complete(main())
-        #print("----> Reading done !")
+        print("----> Reading done !")
         # print("______________________________________")
       
         

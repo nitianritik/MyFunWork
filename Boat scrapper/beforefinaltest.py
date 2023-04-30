@@ -1,33 +1,53 @@
+from telethon import TelegramClient
+import secrets,time,re,helpers
+import asyncio
+from telethon.tl.types import PeerUser, PeerChannel, PeerChat
+import json
+
+
+
+def to_json_string(message_list):
+        print(f" ---->>>>  {message_list}")
+        message_dict = {
+            "senderName": message_list[0],
+            "messageText": message_list[1],
+            "links": message_list[2]
+        }
+
+        json_string = json.dumps(message_dict)
+        return json_string
+
+
+
+client = 0
 MAX_SIZE = 100
 
-# Initialize an empty list to store the lists
 fifo_list = []
-
-# Initialize an empty set to keep track of the unique lists
+added = []
+removed = []
 unique_set = set()
+temp_list = []
 
-import socketio
-sio = socketio.Client()
-sio.connect('http://localhost:8000')
-
-
-# Add tuples to the FIFO set
 def add_to_fifo_set(list_item):
-    # Convert the list to a tuple for set membership testing
     tuple_item = tuple(list_item)
     
-    # Check if the tuple is already in the set
     if tuple_item[1] in unique_set:
         return False
 
-    # Add the list to the list and set
-    print(f"Adding item -> {list_item}")
+    # print(f"Adding item -> {list_item}")
+    added.append(list_item[0])
+    global temp_list
+    temp_list = list_item
+    print("ADDED = ", end="")
+    for id in added: print(id, end=" | ")
     fifo_list.append(list_item)
     unique_set.add(tuple_item[1])
 
-    # Remove the oldest list if the list size exceeds the maximum
     if len(fifo_list) > MAX_SIZE:
         oldest_list = fifo_list.pop(0)
+        removed.append(oldest_list[0])
+        print("REMOVED = ", end="")
+        for id in removed: print(id, end=" | ")
         unique_set.remove(tuple(oldest_list))
 
     return True
@@ -35,21 +55,11 @@ def add_to_fifo_set(list_item):
 
 
 
-from telethon import TelegramClient
-# from telethon.sync import TelegramClient, events, mark_read
-import secrets,time,re,helpers
-
-# import sys
-# sys.path.append('../Secrets')
-
-# import secrets 
-
 # API ID and hash key
 api_id = secrets.telegram_api_id
 api_hash = secrets.app_api_hash
 
 # Create the client
-client = 0
 while 1:
  try:
     print("Trying to commect to Telegram Client...")
@@ -60,81 +70,75 @@ while 1:
     print(f"Exception: {e}")
 
 #Funtion to process the message
-
 id_and_links_dict = {}
 
-def process(message_object):
-
+def process(message_object,Sender):
     id = message_object.id
     message = helpers.strip_links(message_object.message)
-    
     links = helpers.get_link(message_object.message)
-    # print("hello")
-  
-    sending_list = [id,message.strip(),links]
+
+    # Sender = ""
+    # async def get_sender_name():
+    #     global Sender
+    #     global client
+    #     entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
+    #     Sender = entity.title
+
+    # get_sender_name()
     
+    sending_list = [Sender,message.strip(),links]
     print(sending_list)
-   
     flag =  add_to_fifo_set(sending_list)
-     
-
-    return flag
-   
-   
-
-
-
- 
+    return flag 
 
 
 # Set to search the keyword required in the meassage
 keyword_set = {"loot", "big", "boat", "earphone", "protein powder","whey protein", "giveaway" , "give away"}
-
-async def main():
+import websockets
+async def send_message(websocket, path):
 
    try:
     
     # Connect to Telegram
     await client.start()
-
-    # Get all dialogs (chats and channels)
     async for dialog in client.iter_dialogs():
-        # Filter out dialogs with unread messages
+
         if dialog.unread_count > 0:
             messages = await client.get_messages(dialog.input_entity, limit=dialog.unread_count)
-            # Print the messages from the unread dialogs
             for message in messages:
-             
-                
-              if message.post and message.message != "" and process(message):
+              entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
+              Sender = entity.title
 
-                  print(message)
-                  text = message.message.strip()
-                  print(text)
-                  sio.emit('message', text)
-
-                  print("\n----------------------------------------------\n")
-                  #print(f"MESSAGE: \n {message.message}\n  TYPE: \n {type(message.message)} ")
-                  await client.send_read_acknowledge(dialog.input_entity, message)
-                  #await client.mark_read(dialog.input_entity, message)
-
-                
+              if message.post and message.message != "" and process(message,Sender):
+                  L = "\n\n➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
+                #   print(message.peer_id.channel_id.title)
+                  M = str(message.message)
+                  M = M.replace('\n\n','\n')
+                  M = f"🟣 FROM➖  {entity.title} \n\n🟡  MESSAGE➖ \n{M}\n"
+                  print(L+M)
+                #   await websocket.send(L+M)
+                  await websocket.send(to_json_string(temp_list))
+                  await asyncio.sleep(1)
+                  time.sleep(2)
+                  #---------------- MARK AS READ ----------------------
+                #   await client.send_read_acknowledge(dialog.input_entity, message)
 
    except Exception as e:
-      pass
-      #print(f"Exception: {e}")
-                
+      print(f"Exception: {e}")
+
+start_server = websockets.serve(send_message, "localhost", 8000)
+
 
 if __name__ == '__main__':
-    import asyncio
-
     while 1:
         time.sleep(5)
         print("----> Request Reading...")
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(main())
+        asyncio.get_event_loop().run_until_complete(start_server)
+        asyncio.get_event_loop().run_forever()
+
         print("----> Reading done !")
-        print("______________________________________")
+        # print("______________________________________")
       
         
 
