@@ -7,7 +7,6 @@ import json
 
 
 def to_json_string(message_list):
-        print(f" ---->>>>  {message_list}")
         message_dict = {
             "senderName": message_list[0],
             "messageText": message_list[1],
@@ -21,34 +20,31 @@ def to_json_string(message_list):
 
 client = 0
 MAX_SIZE = 100
-
 fifo_list = []
-added = []
-removed = []
 unique_set = set()
 temp_list = []
+Duplicate_count = 0
+NOMS = 0 # Nymber of message sent to websocket count
 
 def add_to_fifo_set(list_item):
+    global Duplicate_count
     tuple_item = tuple(list_item)
     
     if tuple_item[1] in unique_set:
+        Duplicate_count = Duplicate_count+1
         return False
 
-    # print(f"Adding item -> {list_item}")
-    added.append(list_item[0])
     global temp_list
     temp_list = list_item
-    print("ADDED = ", end="")
-    for id in added: print(id, end=" | ")
+    print(f"Duplicate count ----> {Duplicate_count}")
+    print(f"Unique Set size ----> {len(unique_set)}")
+
     fifo_list.append(list_item)
-    unique_set.add(tuple_item[1])
+    unique_set.add(list_item[1])
 
     if len(fifo_list) > MAX_SIZE:
         oldest_list = fifo_list.pop(0)
-        removed.append(oldest_list[0])
-        print("REMOVED = ", end="")
-        for id in removed: print(id, end=" | ")
-        unique_set.remove(tuple(oldest_list))
+        unique_set.remove(oldest_list[1])
 
     return True
 
@@ -74,20 +70,10 @@ id_and_links_dict = {}
 
 def process(message_object,Sender):
     id = message_object.id
-    message = helpers.strip_links(message_object.message)
+    # message = helpers.strip_links(message_object.message)
+    message = message_object.message
     links = helpers.get_link(message_object.message)
-
-    # Sender = ""
-    # async def get_sender_name():
-    #     global Sender
-    #     global client
-    #     entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
-    #     Sender = entity.title
-
-    # get_sender_name()
-    
     sending_list = [Sender,message.strip(),links]
-    print(sending_list)
     flag =  add_to_fifo_set(sending_list)
     return flag 
 
@@ -96,35 +82,40 @@ def process(message_object,Sender):
 keyword_set = {"loot", "big", "boat", "earphone", "protein powder","whey protein", "giveaway" , "give away"}
 import websockets
 async def send_message(websocket, path):
+    global NOMS
+    flag = False
+    try:
+        # Connect to Telegram
+        await client.start()
+        async for dialog in client.iter_dialogs():
+            if dialog.unread_count > 0:
+                messages = await client.get_messages(dialog.input_entity, limit=dialog.unread_count)
+                for message in messages:
+                    try:
+                        entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
+                        Sender = entity.title
 
-   try:
-    
-    # Connect to Telegram
-    await client.start()
-    async for dialog in client.iter_dialogs():
+                        if message.post and message.message != "" and process(message, Sender):
+                            L = "\n➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
+                            M = str(message.message).replace('\n\n', '\n')
+                            M = f"🟣 FROM➖  {entity.title} \n\n🟡  MESSAGE➖ \n{M}\n"
+                            print(L+M)
+                            await websocket.send(to_json_string(temp_list))
+                            NOMS = NOMS+1
+                            print(f"NOMS   ----> {NOMS}")
+                            time.sleep(1)
+                            #---------------- MARK AS READ ----------------------
+                            # await client.send_read_acknowledge(dialog.input_entity, message)
 
-        if dialog.unread_count > 0:
-            messages = await client.get_messages(dialog.input_entity, limit=dialog.unread_count)
-            for message in messages:
-              entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
-              Sender = entity.title
+                    except Exception as e:
+                        print(f"\n🔴Exception in inner loop: {e}")                        
+                        # time.sleep(3)
+                        if "going away" in str(e): flag = True; break
+                if flag: print("Exiting -> going to initian of send_messsage funtion"); break
+    except Exception as e:
+        print(f"\n🔴Exception in outer loop: {e}")
 
-              if message.post and message.message != "" and process(message,Sender):
-                  L = "\n\n➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
-                #   print(message.peer_id.channel_id.title)
-                  M = str(message.message)
-                  M = M.replace('\n\n','\n')
-                  M = f"🟣 FROM➖  {entity.title} \n\n🟡  MESSAGE➖ \n{M}\n"
-                  print(L+M)
-                #   await websocket.send(L+M)
-                  await websocket.send(to_json_string(temp_list))
-                  await asyncio.sleep(1)
-                  time.sleep(2)
-                  #---------------- MARK AS READ ----------------------
-                #   await client.send_read_acknowledge(dialog.input_entity, message)
 
-   except Exception as e:
-      print(f"Exception: {e}")
 
 start_server = websockets.serve(send_message, "localhost", 8000)
 
