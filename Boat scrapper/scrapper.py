@@ -3,6 +3,8 @@ import secrets,time,re,helpers
 import asyncio
 from telethon.tl.types import PeerUser, PeerChannel, PeerChat
 import json
+import websockets
+
 
 
 
@@ -80,7 +82,6 @@ def process(message_object,Sender):
 
 # Set to search the keyword required in the meassage
 keyword_set = {"loot", "big", "boat", "earphone", "protein powder","whey protein", "giveaway" , "give away"}
-import websockets
 async def send_message(websocket, path):
     global NOMS
     flag = False
