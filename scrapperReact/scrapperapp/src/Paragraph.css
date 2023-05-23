@@ -1,0 +1,141 @@
+.chat-container {
+    display: flex;
+    padding-inline: 20px;
+    /* padding: 50px; */
+    flex-direction: column;
+    align-items: center;
+    width: 95%;
+    height: 700px;
+    border: 2px solid black;
+    border-radius: 5px;
+    overflow-y: auto;
+    overflow-x:hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc #f5f5f5;
+    scroll-behavior: smooth;
+    scroll-padding-block-start: 50px;
+    scroll-padding-block: 50px;
+    margin: 10px;
+    scroll-behavior:smooth;
+  }
+  
+  .chat-container::-webkit-scrollbar {
+    width: 8px;
+    height: 60px;
+    border-radius: 4px;
+  }
+  
+  
+  
+  .chat-container::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 2px;
+    height: 50px;
+  
+  }
+  
+  .chat-container::-webkit-scrollbar-track {
+    background-color: #f5f5f5;
+    border-radius: 8px;
+  
+  }
+  
+  .message-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 100%;
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: #eee;
+    animation: fade-in 0.5s ease-in-out;
+    
+  }
+  
+  .message-container.new-message {
+    background-color: #eee;
+    animation: highlight 0.3s ease-in-out, pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    transform-origin: bottom center;
+  }
+  
+  
+  
+  
+  @keyframes highlight {
+    from {
+      background-color: #8bc8f7;
+    }
+    to {
+      background-color: #eee;
+    }
+  }
+  
+  @keyframes pop {
+    0% {
+      transform: scale(0.1);
+    }
+    50% {
+      transform: scale(1.0001);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  .message {
+    margin: 0;
+    font-size: 14px;
+  }
+  
+  .sender {
+    font-weight: bold;
+  }
+  
+  .message-link {
+    margin: 5px 0 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+    word-break: break-all;
+    color: #0066cc;
+   
+  }
+  
+  
+  /* .links-list {
+    margin: 5px 0 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 12px;
+    word-break: break-all;
+    color: #0066cc;
+   
+  }
+  
+  .links-list li {
+    margin: 2px 0;
+  }
+  
+  .links-list li a {
+    color: #0066cc;
+    text-decoration: none;
+  }
+  
+  .links-list li a:hover {
+    text-decoration: underline;
+  } */
+  
+  
+  
+  .chat01{
+  
+    display: flex;
+    justify-content: center;
+  }
+  
+  .scroll-toggle{
+    display: flex;
+    justify-content: center;
+    align-self: center;
+  }

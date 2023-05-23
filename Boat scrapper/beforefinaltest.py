@@ -2,8 +2,9 @@ from telethon import TelegramClient
 import secrets,time,re,helpers
 import asyncio
 from telethon.tl.types import PeerUser, PeerChannel, PeerChat
-import json
+import json,os
 import websockets
+from tqdm import tqdm
 
 imp_words = {"loot",'boat','big loot','umbrella','shirt','fast' , "big", "boat", "earphone", "protein powder","whey protein", "giveaway" , "give away"}
 
@@ -13,8 +14,9 @@ def to_json_string(message_list):
         message_dict = {
             "senderName": message_list[0],
             "messageText": message_list[1],
-            # "links": message_list[2]
-             "important": message_list[2]
+            "important": message_list[2],
+            "views": message_list[3],
+            "timee": message_list[4]
         }
 
         json_string = json.dumps(message_dict)
@@ -34,20 +36,25 @@ Duplicate_count = 0
 NOMS = 0 # Nymber of message sent to websocket count
 
 def add_to_fifo_set(list_item):
-    global Duplicate_count
+    global Duplicate_count,temp_list
     tuple_item = tuple(list_item)
-    
-    if tuple_item[1] in unique_set:
+    message = helpers.strip_links(tuple_item[1])
+    message = message.lower().strip()
+
+    if message in unique_set:
         Duplicate_count = Duplicate_count+1
         return False
+    else:
+        print(f"[{message}]")
 
-    global temp_list
+
+
     temp_list = list_item
-    print(f"Duplicate count ----> {Duplicate_count}")
-    print(f"Unique Set size ----> {len(unique_set)}")
+    print(f"Duplicate count ————————> {Duplicate_count}")
+    print(f"Unique Set size ————————> {len(unique_set)}")
 
-    fifo_list.append(list_item)
-    unique_set.add(list_item[1])
+    fifo_list.append(message)
+    unique_set.add(message)
 
     if len(fifo_list) > MAX_SIZE:
         oldest_list = fifo_list.pop(0)
@@ -67,9 +74,10 @@ while 1:
  try:
     print("Trying to commect to Telegram Client...")
     client = TelegramClient('Ritik_telegram_session', api_id, api_hash)
-    print("Successfully connected !!!")
+    print("✅ Successfully connected !!!")
     break
  except Exception as e:
+    print("🟡 Telegram Client connect Exceptiton ->")
     print(f"Exception: {e}")
 
 #Funtion to process the message
@@ -81,83 +89,115 @@ def process(message_object,Sender):
     message = message_object.message
     # links = helpers.get_link(message_object.message)
     important  = any(word.lower() in message.lower() for word in imp_words)
-    sending_list = [Sender,message.strip(),important]
+    timee = str(message_object.date.hour)+":"+str(message_object.date.minute)
+    sending_list = [Sender,message.strip(),important,message_object.views,timee]
+    # print(sending_list)
     flag =  add_to_fifo_set(sending_list)
     return flag 
 
 
-# Set to search the keyword required in the meassage
+import shutil
+
+def print_horizontal_line(character):
+    terminal_width = shutil.get_terminal_size().columns
+    line = character * terminal_width
+    print(line)
+
+import asyncio
+import websockets
+
 async def send_message(websocket, path):
     global NOMS
-    flag = False
-    try:
-        # Connect to Telegram
-        await client.start()
-        print("🔵 Client Started.")
-        async for dialog in client.iter_dialogs():
-            if dialog.unread_count > 0:
-                unread  = dialog.unread_count
-                print("THIS IS UNREAD CONT -------------> ",end=" ")
-                print(unread)
-                messages = await client.get_messages(dialog.input_entity, limit=dialog.unread_count)
-                for message in messages:
-                    # print(message)
-                    if unread==0: return
-                    try:
-                        try:
-                            entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
-                            Sender = entity.title
-                            # print("*****************")
-                            # print(entity)
-                            # print("*****************")
-                        except:
-                            
-                            print("*****************")
-                            print(entity)
-                            print("*****************")
-                            entity = await client.get_entity(PeerUser(user_id=int(message.peer_id.user_id)))
-                            Sender = entity.first_name + " " + entity.last_name
-                            time.sleep(20)
-                        if message.post and message.message != "" and process(message, Sender):
-                            L = "\n➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
-                            M = str(message.message).replace('\n\n', '\n')
-                            M = f"🟣 FROM➖  {entity.title} \n\n🟡  MESSAGE➖ \n{M}\n"
-                            print(L+M)
-                            await websocket.send(to_json_string(temp_list))
-                            NOMS = NOMS+1
-                            print(f"NOMS   ----> {NOMS}")
-                            # time.sleep(1)
-                            #---------------- MARK AS READ ----------------------
-                            await client.send_read_acknowledge(dialog.input_entity, message)
+    await client.start()
 
-                    except Exception as e:
-                        if dialog.unread_count==0: break
-                        print(f"\n🔴Exception in inner loop: {e}")                        
-                        # time.sleep(3)
-                        if "going away" in str(e): return
-                    unread = unread-1
-
-                if flag: print("Exiting -> going to initian of send_messsage funtion");  break
-        if dialog.unread_count==0: print("======== inside if ======="); loop.stop(); loop.close()
-
-    except Exception as e:
-        print(f"\n🔴Exception in outer loop: {e}")
-
-
-start_server = websockets.serve(send_message, "localhost", 8000)
-flag = False
-if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
-    task = asyncio.get_event_loop().run_until_complete(start_server)
     while 1:
-        time.sleep(5)
-        print("----> Request Reading...")
-        if flag: 
-            pass
-        asyncio.get_event_loop().run_forever()
-        print("----> Reading done !")
-        flag = True
+       
+        try:
+            async for dialog in client.iter_dialogs():
+                # print(dialog)
+                # print(" ")
+                if dialog.unread_count > 0:
+                    print(f"{dialog.unread_count} UNREAD from ————————> {dialog.name.upper()} ")
+                    messages = await client.get_messages(dialog.input_entity, limit=dialog.unread_count)
+                    for message in messages:
+                        try:
+                            try:
+                                entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
+                                Sender = entity.title
+                            except:
+                                entity = await client.get_entity(PeerUser(user_id=int(message.peer_id.user_id)))
+                                Sender = entity.first_name + " " + entity.last_name
+                                await asyncio.sleep(20)  # Use asyncio.sleep instead of time.sleep
+                                
+                            if message.post and message.message != "" and process(message, Sender):
+                                M = str(message.message).replace('\n\n', '\n')
+                                # ✅❌➡️▶️ ▶►
+                                M = f"▶► FROM  {entity.title} \n▶►  MESSAGE \n{M}\n"
+                                print_horizontal_line("↔")   
+                                print(M)
+                                # print(temp_list)
+                                await websocket.send(to_json_string(temp_list))
+                                NOMS += 1
+                                print(f"NOMS   ————————> {NOMS}")
+                            if message.post:
+                                pass
+                                # await client.send_read_acknowledge(dialog.input_entity, message)
 
-        print("______________________________________")
+                        except Exception as e:
+                            print(f"\n🟡 Exception in inner loop: {e}")
+                            # asyncio.sleep(3)  # Use asyncio.sleep instead of time.sleep
+                            if "going away" in str(e):
+                                try:
+                                    await client.start()
+                                except Exception as e:
+                                    print("🟡 Was 'Going Away' then Client Start Exceptiton ->")
+                                    print(f"Exception: {e}")
+
+
+            if dialog.unread_count == 0:
+                pass
+
+                #print(f"Unread Count is {dialog.unread_count} now")
+                # loop.stop()
+                # loop.close()
+
+        except Exception as e:
+            print(f"\n🟡 Exception in outer loop: {e}")
+
+        print_horizontal_line("=")
+
+        if client.is_connected:
+          total_iterations = 10
+          print(f"🔵 Client is connnected, reading new messages again after {total_iterations} seconds...")
+          for _ in tqdm(range(total_iterations)):
+             time.sleep(1)
+          os.system('cls' if os.name == 'nt' else 'clear')
+
+        elif not client.is_connected:
+            print("❌ Client is not connected !!!") 
+    
+if __name__ == '__main__':
+    start_server = websockets.serve(send_message, "localhost", 8000)
+    loop = asyncio.get_event_loop()
+    task = loop.run_until_complete(start_server)
+
+    try:
+        print("Server started!")
+        loop.run_forever()
+    finally:
+        task.cancel()
+        loop.run_until_complete(task)
+
+
+# start_server = websockets.serve(send_message, "localhost", 8000)
+# loop = asyncio.get_event_loop()
+# task = loop.run_until_complete(start_server)  
+
+# if __name__ == '__main__':
+#     while True: 
+#         print("————————> Request Reading...")
+#         loop.run_forever()
+#         print("————————> Reading done !")
+
       
         
