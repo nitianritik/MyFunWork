@@ -2,9 +2,11 @@ from telethon import TelegramClient
 import secrets,time,re,helpers
 import asyncio
 from telethon.tl.types import PeerUser, PeerChannel, PeerChat
-import json
+import json,os
 import websockets
+from tqdm import tqdm
 
+imp_words = {"loot",'boat','big loot','umbrella','shirt','fast' , "big", "boat", "earphone", "protein powder","whey protein", "giveaway" , "give away"}
 
 
 
@@ -12,15 +14,20 @@ def to_json_string(message_list):
         message_dict = {
             "senderName": message_list[0],
             "messageText": message_list[1],
-            "links": message_list[2]
+            "important": message_list[2],
+            "views": message_list[3],
+            "timee": message_list[4]
         }
 
         json_string = json.dumps(message_dict)
+        # print(json_string)
         return json_string
 
 
 
 client = 0
+loop = 0
+task  = 0
 MAX_SIZE = 100
 fifo_list = []
 unique_set = set()
@@ -29,20 +36,25 @@ Duplicate_count = 0
 NOMS = 0 # Nymber of message sent to websocket count
 
 def add_to_fifo_set(list_item):
-    global Duplicate_count
+    global Duplicate_count,temp_list
     tuple_item = tuple(list_item)
-    
-    if tuple_item[1] in unique_set:
+    message = helpers.strip_links(tuple_item[1])
+    message = message.lower().strip()
+
+    if message in unique_set:
         Duplicate_count = Duplicate_count+1
         return False
+    else:
+        print(f"[{message}]")
 
-    global temp_list
+
+
     temp_list = list_item
-    print(f"Duplicate count ----> {Duplicate_count}")
-    print(f"Unique Set size ----> {len(unique_set)}")
+    print(f"Duplicate count ————————> {Duplicate_count}")
+    print(f"Unique Set size ————————> {len(unique_set)}")
 
-    fifo_list.append(list_item)
-    unique_set.add(list_item[1])
+    fifo_list.append(message)
+    unique_set.add(message)
 
     if len(fifo_list) > MAX_SIZE:
         oldest_list = fifo_list.pop(0)
@@ -62,113 +74,130 @@ while 1:
  try:
     print("Trying to commect to Telegram Client...")
     client = TelegramClient('Ritik_telegram_session', api_id, api_hash)
-    print("Successfully connected !!!")
+    print("✅ Successfully connected !!!")
     break
  except Exception as e:
+    print("🟡 Telegram Client connect Exceptiton ->")
     print(f"Exception: {e}")
 
 #Funtion to process the message
 id_and_links_dict = {}
 
 def process(message_object,Sender):
-    id = message_object.id
+    # id = message_object.id
     # message = helpers.strip_links(message_object.message)
     message = message_object.message
-    links = helpers.get_link(message_object.message)
-    sending_list = [Sender,message.strip(),links]
+    # links = helpers.get_link(message_object.message)
+    important  = any(word.lower() in message.lower() for word in imp_words)
+    timee = str(message_object.date.hour)+":"+str(message_object.date.minute)
+    sending_list = [Sender,message.strip(),important,message_object.views,timee]
+    # print(sending_list)
     flag =  add_to_fifo_set(sending_list)
     return flag 
 
 
-# Set to search the keyword required in the meassage
-keyword_set = {"loot", "big", "boat", "earphone", "protein powder","whey protein", "giveaway" , "give away"}
+import shutil
+
+def print_horizontal_line(character):
+    terminal_width = shutil.get_terminal_size().columns
+    line = character * terminal_width
+    print(line)
+
+import asyncio
+import websockets
+
 async def send_message(websocket, path):
     global NOMS
-    flag = False
-    try:
-        # Connect to Telegram
-        await client.start()
-        async for dialog in client.iter_dialogs():
-            if dialog.unread_count > 0:
-                messages = await client.get_messages(dialog.input_entity, limit=dialog.unread_count)
-                for message in messages:
-                    try:
-                        entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
-                        Sender = entity.title
+    await client.start()
 
-                        if message.post and message.message != "" and process(message, Sender):
-                            L = "\n➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
-                            M = str(message.message).replace('\n\n', '\n')
-                            M = f"🟣 FROM➖  {entity.title} \n\n🟡  MESSAGE➖ \n{M}\n"
-                            print(L+M)
-                            await websocket.send(to_json_string(temp_list))
-                            NOMS = NOMS+1
-                            print(f"NOMS   ----> {NOMS}")
-                            time.sleep(1)
-                            #---------------- MARK AS READ ----------------------
-                            # await client.send_read_acknowledge(dialog.input_entity, message)
-
-                    except Exception as e:
-                        print(f"\n🔴Exception in inner loop: {e}")                        
-                        # time.sleep(3)
-                        if "going away" in str(e): flag = True; break
-                if flag: print("Exiting -> going to initian of send_messsage funtion"); break
-    except Exception as e:
-        print(f"\n🔴Exception in outer loop: {e}")
-
-
-
-start_server = websockets.serve(send_message, "localhost", 8000)
-
-
-if __name__ == '__main__':
     while 1:
-        time.sleep(5)
-        print("----> Request Reading...")
-        loop = asyncio.get_event_loop()
-        asyncio.get_event_loop().run_until_complete(start_server)
-        asyncio.get_event_loop().run_forever()
+       
+        try:
+            async for dialog in client.iter_dialogs():
+                # print(dialog)
+                # print(" ")
+                if dialog.unread_count > 0:
+                    print(f"{dialog.unread_count} UNREAD from ————————> {dialog.name.upper()} ")
+                    messages = await client.get_messages(dialog.input_entity, limit=dialog.unread_count)
+                    for message in messages:
+                        try:
+                            try:
+                                entity = await client.get_entity(PeerChannel(channel_id=int(message.peer_id.channel_id)))
+                                Sender = entity.title
+                            except:
+                                entity = await client.get_entity(PeerUser(user_id=int(message.peer_id.user_id)))
+                                Sender = entity.first_name + " " + entity.last_name
+                                await asyncio.sleep(20)  # Use asyncio.sleep instead of time.sleep
+                                
+                            if message.post and message.message != "" and process(message, Sender):
+                                M = str(message.message).replace('\n\n', '\n')
+                                # ✅❌➡️▶️ ▶►
+                                M = f"▶► FROM  {entity.title} \n▶►  MESSAGE \n{M}\n"
+                                print_horizontal_line("↔")   
+                                print(M)
+                                # print(temp_list)
+                                await websocket.send(to_json_string(temp_list))
+                                NOMS += 1
+                                print(f"NOMS   ————————> {NOMS}")
+                            if message.post:
+                                pass
+                                # await client.send_read_acknowledge(dialog.input_entity, message)
 
-        print("----> Reading done !")
-        # print("______________________________________")
+                        except Exception as e:
+                            print(f"\n🟡 Exception in inner loop: {e}")
+                            # asyncio.sleep(3)  # Use asyncio.sleep instead of time.sleep
+                            if "going away" in str(e):
+                                try:
+                                    await client.start()
+                                except Exception as e:
+                                    print("🟡 Was 'Going Away' then Client Start Exceptiton ->")
+                                    print(f"Exception: {e}")
+
+
+            if dialog.unread_count == 0:
+                pass
+
+                #print(f"Unread Count is {dialog.unread_count} now")
+                # loop.stop()
+                # loop.close()
+
+        except Exception as e:
+            print(f"\n🟡 Exception in outer loop: {e}")
+
+        print_horizontal_line("=")
+
+        if client.is_connected:
+          total_iterations = 10
+          print(f"🔵 Client is connnected, reading new messages again after {total_iterations} seconds...")
+          for _ in tqdm(range(total_iterations)):
+             time.sleep(1)
+          os.system('cls' if os.name == 'nt' else 'clear')
+
+        elif not client.is_connected:
+            print("❌ Client is not connected !!!") 
+    
+if __name__ == '__main__':
+    start_server = websockets.serve(send_message, "localhost", 8000)
+    loop = asyncio.get_event_loop()
+    task = loop.run_until_complete(start_server)
+
+    try:
+        print("Server started!")
+        loop.run_forever()
+    finally:
+        task.cancel()
+        loop.run_until_complete(task)
+
+
+# start_server = websockets.serve(send_message, "localhost", 8000)
+# loop = asyncio.get_event_loop()
+# task = loop.run_until_complete(start_server)  
+
+# if __name__ == '__main__':
+#     while True: 
+#         print("————————> Request Reading...")
+#         loop.run_forever()
+#         print("————————> Reading done !")
+
       
         
-
-''''
-
-ALL OF THE ATTRIBUTES OF MESSAGE
-
-
-id: The unique identifier for the message.
-peer_id: The ID of the chat or channel where the message was sent.
-date: The date and time when the message was sent.
-message: The text content of the message.
-out: A boolean indicating whether the message was sent by the current user.
-mentioned: A boolean indicating whether the message contains a mention of the current user.
-media_unread: A boolean indicating whether the message has been marked as unread.
-silent: A boolean indicating whether the message was sent silently.
-post: A boolean indicating whether the message is a post.
-from_scheduled: A boolean indicating whether the message was sent as a scheduled message.
-legacy: A boolean indicating whether the message is a legacy message.
-edit_hide: A boolean indicating whether the message was hidden due to editing.
-pinned: A boolean indicating whether the message is pinned.
-noforwards: A boolean indicating whether the message cannot be forwarded.
-from_id: The ID of the user who sent the message, if available.
-fwd_from: The information about the forwarded message, if applicable.
-via_bot_id: The ID of the bot through which the message was sent, if applicable.
-reply_to: The ID of the message to which this message is a reply, if applicable.
-media: The media content of the message, if any.
-reply_markup: The reply markup of the message, if any.
-entities: The entities (such as URLs or hashtags) present in the message, if any.
-views: The number of views the message has received.
-forwards: The number of times the message has been forwarded.
-replies: The information about the replies to the message, if any.
-edit_date: The date and time when the message was last edited, if applicable.
-post_author: The author of the post, if applicable.
-grouped_id: The ID of the group to which the message belongs, if applicable.
-reactions: The reactions to the message, if any.
-restriction_reason: The reasons for which the message is restricted, if any.
-ttl_period: The time-to-live period for the message, if applicable.
-
-
-'''

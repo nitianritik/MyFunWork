@@ -36,6 +36,8 @@ Duplicate_count = 0
 NOMS = 0 # Nymber of message sent to websocket count
 
 def add_to_fifo_set(list_item):
+    # print("🔵 Start of add_to_fifo_set")
+
     global Duplicate_count,temp_list
     tuple_item = tuple(list_item)
     message = helpers.strip_links(tuple_item[1])
@@ -45,20 +47,27 @@ def add_to_fifo_set(list_item):
         Duplicate_count = Duplicate_count+1
         return False
     else:
-        print(f"[{message}]")
+        print(f"▶► Duplicate Message Found:- [{message}]")
 
 
 
     temp_list = list_item
     print(f"Duplicate count ————————> {Duplicate_count}")
     print(f"Unique Set size ————————> {len(unique_set)}")
+    print(f"Fifo Set size ————————> {len(fifo_list)}")
 
     fifo_list.append(message)
     unique_set.add(message)
 
     if len(fifo_list) > MAX_SIZE:
         oldest_list = fifo_list.pop(0)
-        unique_set.remove(oldest_list[1])
+        # print_horizontal_line(":")
+        # print(unique_set)
+        # print(" ")
+        # print(oldest_list)
+        # print_horizontal_line(":")
+        # print("🔵 End of add_to_fifo_set")
+        unique_set.remove(oldest_list)
 
     return True
 
@@ -145,6 +154,9 @@ async def send_message(websocket, path):
 
                         except Exception as e:
                             print(f"\n🟡 Exception in inner loop: {e}")
+                            # print_horizontal_line(".")
+                            # print(message)
+                            # print_horizontal_line(".")
                             # asyncio.sleep(3)  # Use asyncio.sleep instead of time.sleep
                             if "going away" in str(e):
                                 try:
@@ -152,6 +164,8 @@ async def send_message(websocket, path):
                                 except Exception as e:
                                     print("🟡 Was 'Going Away' then Client Start Exceptiton ->")
                                     print(f"Exception: {e}")
+                            print_horizontal_line("↔")   
+
 
 
             if dialog.unread_count == 0:
@@ -178,6 +192,7 @@ async def send_message(websocket, path):
     
 if __name__ == '__main__':
     start_server = websockets.serve(send_message, "localhost", 8000)
+    # start_server = websockets.serve(send_message, "localhost", 8000)
     loop = asyncio.get_event_loop()
     task = loop.run_until_complete(start_server)
 
@@ -189,15 +204,3 @@ if __name__ == '__main__':
         loop.run_until_complete(task)
 
 
-# start_server = websockets.serve(send_message, "localhost", 8000)
-# loop = asyncio.get_event_loop()
-# task = loop.run_until_complete(start_server)  
-
-# if __name__ == '__main__':
-#     while True: 
-#         print("————————> Request Reading...")
-#         loop.run_forever()
-#         print("————————> Reading done !")
-
-      
-        
