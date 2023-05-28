@@ -1,1 +1,5 @@
-    start_server = websockets.serve(send_message, "192.168.43.247", 8000)
+ print(f"Duplicate Count: {Duplicate_count:10}")
+        print(f"Unread Count was: {Duplicate_count:10}")
+        print(f"fifo_list size: {len(fifo_list):10}")
+        print(f"unique_set size: {len(unique_set):10}")
+        print(f"temp_list size: {len(temp_list):10}")

@@ -3,6 +3,7 @@ import { w3cwebsocket as WebSocket } from 'websocket';
 import './Chatmodule.css';
 
 const ws1 = new WebSocket('ws://localhost:8000/');
+// const ws1 = new WebSocket('ws://localhost:8000/');
 // const ws2 = new WebSocket('ws://localhost:8001/');
 
 function Chatmodule() {
@@ -40,36 +41,8 @@ function Chatmodule() {
           return newMessages2;
         });
       }
-
-      // const data2 = JSON.parse(event.data2);
-      // if (data2.important) {
-      //   setMessages2((prevMessages2) => {
-      //     // keep only the last 199 important messages and add the new one
-      //     const newMessages2 = [...prevMessages2, data2].slice(-199);
-      //     setNewMessage2(true);
-      //     setTimeout(() => setNewMessage2(false), 5000); // Hide new message indicator after 5 seconds
-      //     return newMessages2;
-      //   });
-      // }
-
     };
   }, []);
-
-  // useEffect(() => {
-  //   ws2.onmessage = (event) => {
-  //     const data2 = JSON.parse(event.data2);
-  //     if (data2.important) {
-  //       setMessages2((prevMessages2) => {
-  //         // keep only the last 199 important messages and add the new one
-  //         const newMessages2 = [...prevMessages2, data2].slice(-199);
-  //         setNewMessage2(true);
-  //         setTimeout(() => setNewMessage2(false), 5000); // Hide new message indicator after 5 seconds
-  //         return newMessages2;
-  //       });
-  //     }
-  //   };
-  // }, []);
-  
 
   useEffect(() => {
     if (shouldAutoScroll && chatContainerRef.current && chatContainerRef2.current) {
@@ -185,7 +158,7 @@ return (
           <div ref={chatEndRef2}></div>
         </div>
         {messages2.length > 18 ? (
-          <div className="scroll-toggle2">
+          <div className="scroll-toggle">
             <button onClick={toggleAutoScroll2}>
               {shouldAutoScroll2 ? 'Auto Scroll On' : 'Auto Scroll Off'}
             </button>

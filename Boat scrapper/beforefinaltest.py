@@ -5,9 +5,30 @@ from telethon.tl.types import PeerUser, PeerChannel, PeerChat
 import json,os
 import websockets
 from tqdm import tqdm
+from telethon.tl.functions.messages import ReadHistoryRequest
+import pygame
+
+
 
 imp_words = {"loot",'boat','big loot','umbrella','shirt','fast' , "big", "boat", "earphone", "protein powder","whey protein", "giveaway" , "give away"}
+unread_count = 0
 
+def play_notification_sound(notification_sound_path):
+    # Replace 'path_to_notification_sound' with the actual path to your notification sound file
+    # notification_sound_path = 'NotificationSound.mp3'
+    
+    pygame.mixer.init()
+    pygame.mixer.music.load(notification_sound_path)
+    pygame.mixer.music.play()
+
+
+async def mark_all_messages_as_read():
+    global unread_count
+    async for dialog in client.iter_dialogs():
+        if dialog.unread_count > 0:
+            unread_count = unread_count+dialog.unread_count
+            await client.send_read_acknowledge(dialog.input_entity, max_id=0)
+    print(f"All {unread_count} messages marked as read.")
 
 
 def to_json_string(message_list):
@@ -72,17 +93,17 @@ def add_to_fifo_set(list_item):
     return True
 
 
-
-
 # API ID and hash key
 api_id = secrets.telegram_api_id
 api_hash = secrets.app_api_hash
+session_file = 'Ritik_telegram_session'
+
 
 # Create the client
 while 1:
  try:
     print("Trying to commect to Telegram Client...")
-    client = TelegramClient('Ritik_telegram_session', api_id, api_hash)
+    client = TelegramClient(session_file, api_id, api_hash)
     print("✅ Successfully connected !!!")
     break
  except Exception as e:
@@ -118,6 +139,7 @@ import websockets
 async def send_message(websocket, path):
     global NOMS
     await client.start()
+    # await mark_all_messages_as_read()
 
     while 1:
        
@@ -146,11 +168,18 @@ async def send_message(websocket, path):
                                 print(M)
                                 # print(temp_list)
                                 await websocket.send(to_json_string(temp_list))
+                                print(temp_list)
+
+                                if temp_list[2]:
+                                   play_notification_sound("NotificationSound")
+                                else:
+                                   play_notification_sound("NotificationSound2")
+
                                 NOMS += 1
                                 print(f"NOMS   ————————> {NOMS}")
                             if message.post:
-                                pass
-                                # await client.send_read_acknowledge(dialog.input_entity, message)
+                                # pass
+                                await client.send_read_acknowledge(dialog.input_entity, message)
 
                         except Exception as e:
                             print(f"\n🟡 Exception in inner loop: {e}")
@@ -177,7 +206,18 @@ async def send_message(websocket, path):
 
         except Exception as e:
             print(f"\n🟡 Exception in outer loop: {e}")
+        print(f"* Duplicate Count:      {Duplicate_count}")
+        print(f"* Unread Count was:     {unread_count}")
+        print(f"* fifo_list size:       {len(fifo_list)}")
+        print(f"* unique_set size:      {len(unique_set)}")
+        print(f"* temp_list size:       {len(temp_list)}")
 
+
+      
+
+        # fifo_list = []
+        # unique_set = set()
+        # temp_list = []
         print_horizontal_line("=")
 
         if client.is_connected:
@@ -187,7 +227,7 @@ async def send_message(websocket, path):
              time.sleep(1)
           os.system('cls' if os.name == 'nt' else 'clear')
 
-        elif not client.is_connected:
+        elif not client.is_connected: 
             print("❌ Client is not connected !!!") 
     
 if __name__ == '__main__':
