@@ -16,6 +16,7 @@ unread_count = 0
 def play_notification_sound(notification_sound_path):
     # Replace 'path_to_notification_sound' with the actual path to your notification sound file
     # notification_sound_path = 'NotificationSound.mp3'
+    notification_sound_path = notification_sound_path
     
     pygame.mixer.init()
     pygame.mixer.music.load(notification_sound_path)
@@ -139,7 +140,7 @@ import websockets
 async def send_message(websocket, path):
     global NOMS
     await client.start()
-    # await mark_all_messages_as_read()
+    await mark_all_messages_as_read()
 
     while 1:
        
@@ -168,17 +169,14 @@ async def send_message(websocket, path):
                                 print(M)
                                 # print(temp_list)
                                 await websocket.send(to_json_string(temp_list))
-                                print(temp_list)
 
-                                if temp_list[2]:
-                                   play_notification_sound("NotificationSound")
-                                else:
-                                   play_notification_sound("NotificationSound2")
+                                if temp_list[2]: play_notification_sound("NotificationSound2.mp3")
+                                else: play_notification_sound('NotificationSound.mp3')
 
                                 NOMS += 1
                                 print(f"NOMS   ————————> {NOMS}")
                             if message.post:
-                                # pass
+                                pass
                                 await client.send_read_acknowledge(dialog.input_entity, message)
 
                         except Exception as e:
